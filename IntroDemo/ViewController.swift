@@ -45,6 +45,11 @@ class ViewController: UIViewController {
         setupConstrants()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        startTimer()
+    }
+    
     fileprivate func setupSlideScrollView(slides : [UIImageView]) {
         scrollView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.height)
         scrollView.contentSize = CGSize(width: view.frame.width * CGFloat(slides.count), height: view.frame.height)
@@ -80,9 +85,33 @@ class ViewController: UIViewController {
     }
 }
 
+extension ViewController {
+    fileprivate func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true, block: { _ in self.nextIntro() })
+    }
+    
+    fileprivate func nextIntro() {
+        currentIndex += 1
+        let animated = currentIndex != images.count
+        
+        if currentIndex > images.count - 1 {
+            currentIndex = 0
+        }
+        
+        showIntro(atIndex: currentIndex, animated: animated)
+    }
+    
+    fileprivate func showIntro(atIndex index: Int, animated: Bool = true) {
+        guard index < images.count else { return }
+        scrollView.scrollRectToVisible(CGRect(x: CGFloat(index) * view.frame.width, y: 0, width: view.frame.width, height: view.frame.height),
+                                       animated: animated)
+    }
+}
+
 extension ViewController: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let pageIndex = round(scrollView.contentOffset.x / view.frame.width)
+        currentIndex = Int(pageIndex)
         pageControl.currentPage = Int(pageIndex)
     }
 }
